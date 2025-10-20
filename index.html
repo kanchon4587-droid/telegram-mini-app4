@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneTag Rewards - Telegram Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- 🔸 MoneTag Active SDK Integration -->
+  <script src='//libtl.com/sdk.js' data-zone='10053409' data-sdk='show_10053409'></script>
+    :root {
+      --primary: #ffc107;
+      --accent: #ff9800;
+      --bg-dark: #1a0f0b;
+      --btn-green: #2ea44f;
+      --btn-blue: #00bcd4;
+      --btn-orange: #ff9800;
+      --btn-yellow: #ffc107;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: radial-gradient(circle at top, #ff9e00, #3e0000);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 24px;
+      border-radius: 22px;
+      text-align: center;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+    }
+    h1 {
+      color: var(--primary);
+      font-size: 1.8em;
+      margin-bottom: 5px;
+      text-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
+    }
+    .dev {
+      display: inline-block;
+      background: #007bff;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.9em;
+    }
+    .stats {
+      margin-top: 15px;
+      font-size: 1em;
+      line-height: 1.6em;
+    }
+    .progress {
+      width: 150px;
+      height: 150px;
+      margin: 20px auto;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) 0deg, #444 0deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4em;
+      font-weight: bold;
+      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+    .watch { background: var(--btn-green); }
+    .auto { background: var(--btn-blue); }
+    .stop { background: var(--btn-orange); }
+    .withdraw { background: var(--btn-yellow); color: #000; }
+    button:hover { opacity: 0.9; transform: scale(1.02); }
+    footer {
+      margin-top: 12px;
+      font-size: 0.85em;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎁 MoneTag Rewards</h1>
+    <div class="dev">👨‍💻 Developer: Md Abdur Rahman</div>
+
+    <div class="stats">
+      📺 Watched Ads: <span id="watched">0</span><br />
+      💰 Earned Points: <span id="points">0</span>
+    </div>
+
+    <div class="progress" id="progress">0%</div>
+
+    <button class="watch" id="watchBtn">▶️ Watch Ad</button>
+    <button class="auto" id="autoBtn">🔁 Auto Show Ads</button>
+    <button class="stop" id="stopBtn" disabled>⏹️ Stop Auto Ads</button>
+    <button class="withdraw" id="withdrawBtn">💵 Withdraw</button>
+
+    <footer>Made for Telegram Mini App + MoneTag Ads</footer>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
+
+    let watched = 0;
+    let points = 0;
+    let percent = 0;
+    let autoMode = false;
+    let autoInterval = null;
+
+    const watchedEl = document.getElementById("watched");
+    const pointsEl = document.getElementById("points");
+    const progressEl = document.getElementById("progress");
+    const watchBtn = document.getElementById("watchBtn");
+    const autoBtn = document.getElementById("autoBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const withdrawBtn = document.getElementById("withdrawBtn");
+
+    function updateUI() {
+      watchedEl.textContent = watched;
+      pointsEl.textContent = points;
+      progressEl.textContent = percent + "%";
+      progressEl.style.background = `conic-gradient(var(--primary) ${percent * 3.6}deg, #444 ${percent * 3.6}deg)`;
+    }
+
+    function showAd() {
+      // 🔸 Try to show your MoneTag ad if loaded
+      if (typeof show_10026902 === "function") {
+        show_10026902();
+      }
+      watched++;
+      const gain = 5 + Math.floor(Math.random() * 6);
+      points += gain;
+      percent = Math.min(100, (points % 100));
+      updateUI();
+      if (tg) tg.showAlert(`You earned ${gain} points!`);
+    }
+
+    watchBtn.addEventListener("click", () => showAd());
+
+    autoBtn.addEventListener("click", () => {
+      if (autoMode) return;
+      autoMode = true;
+      stopBtn.disabled = false;
+      autoInterval = setInterval(showAd, 4000);
+      if (tg) tg.showAlert("Auto ads started!");
+    });
+
+    stopBtn.addEventListener("click", () => {
+      if (!autoMode) return;
+      autoMode = false;
+      stopBtn.disabled = true;
+      clearInterval(autoInterval);
+      if (tg) tg.showAlert("Auto ads stopped!");
+    });
+
+    withdrawBtn.addEventListener("click", () => {
+      if (points < 50) {
+        tg ? tg.showAlert("You need 50+ points to withdraw.") : alert("Need 50+ points.");
+        return;
+      }
+      const withdrawAmount = Math.floor(points / 50);
+      tg ? tg.showAlert(`Withdrawing ${withdrawAmount} units...`) : alert(`Withdrawing ${withdrawAmount} units...`);
+      points = 0;
+      updateUI();
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>
