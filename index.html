@@ -8,6 +8,8 @@
   
   <!-- 🔸 MoneTag Active SDK Integration -->
   <script src='//libtl.com/sdk.js' data-zone='10053409' data-sdk='show_10053409'></script>
+
+  <style>
     :root {
       --primary: #ffc107;
       --accent: #ff9800;
@@ -17,6 +19,7 @@
       --btn-orange: #ff9800;
       --btn-yellow: #ffc107;
     }
+
     body {
       font-family: "Poppins", sans-serif;
       margin: 0;
@@ -28,6 +31,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .card {
       background: rgba(0, 0, 0, 0.5);
       padding: 24px;
@@ -38,12 +42,14 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(6px);
     }
+
     h1 {
       color: var(--primary);
       font-size: 1.8em;
       margin-bottom: 5px;
       text-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
     }
+
     .dev {
       display: inline-block;
       background: #007bff;
@@ -52,11 +58,13 @@
       border-radius: 10px;
       font-size: 0.9em;
     }
+
     .stats {
       margin-top: 15px;
       font-size: 1em;
       line-height: 1.6em;
     }
+
     .progress {
       width: 150px;
       height: 150px;
@@ -71,6 +79,7 @@
       box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
       transition: all 0.3s ease;
     }
+
     button {
       display: block;
       width: 100%;
@@ -84,11 +93,14 @@
       color: white;
       transition: 0.2s;
     }
+
     .watch { background: var(--btn-green); }
     .auto { background: var(--btn-blue); }
     .stop { background: var(--btn-orange); }
     .withdraw { background: var(--btn-yellow); color: #000; }
+
     button:hover { opacity: 0.9; transform: scale(1.02); }
+
     footer {
       margin-top: 12px;
       font-size: 0.85em;
@@ -134,6 +146,25 @@
     const stopBtn = document.getElementById("stopBtn");
     const withdrawBtn = document.getElementById("withdrawBtn");
 
+    // ✅ Load previous progress
+    function loadProgress() {
+      watched = parseInt(localStorage.getItem("watched")) || 0;
+      points = parseInt(localStorage.getItem("points")) || 0;
+      percent = Math.min(100, points % 100);
+    }
+
+    // ✅ Save progress
+    function saveProgress() {
+      localStorage.setItem("watched", watched);
+      localStorage.setItem("points", points);
+    }
+
+    // ✅ Safe alert function
+    function notify(msg) {
+      if (tg && tg.showAlert) tg.showAlert(msg);
+      else alert(msg);
+    }
+
     function updateUI() {
       watchedEl.textContent = watched;
       pointsEl.textContent = points;
@@ -142,26 +173,28 @@
     }
 
     function showAd() {
-      // 🔸 Try to show your MoneTag ad if loaded
-      if (typeof show_10026902 === "function") {
-        show_10026902();
+      // 🔸 Show your MoneTag ad if loaded
+      if (typeof show_10053409 === "function") {
+        show_10053409();
       }
+
       watched++;
       const gain = 5 + Math.floor(Math.random() * 6);
       points += gain;
-      percent = Math.min(100, (points % 100));
+      percent = Math.min(100, points % 100);
       updateUI();
-      if (tg) tg.showAlert(`You earned ${gain} points!`);
+      saveProgress();
+      notify(`🎉 You earned ${gain} points!`);
     }
 
-    watchBtn.addEventListener("click", () => showAd());
+    watchBtn.addEventListener("click", showAd);
 
     autoBtn.addEventListener("click", () => {
       if (autoMode) return;
       autoMode = true;
       stopBtn.disabled = false;
       autoInterval = setInterval(showAd, 4000);
-      if (tg) tg.showAlert("Auto ads started!");
+      notify("🔁 Auto ads started!");
     });
 
     stopBtn.addEventListener("click", () => {
@@ -169,20 +202,22 @@
       autoMode = false;
       stopBtn.disabled = true;
       clearInterval(autoInterval);
-      if (tg) tg.showAlert("Auto ads stopped!");
+      notify("⏹️ Auto ads stopped!");
     });
 
     withdrawBtn.addEventListener("click", () => {
       if (points < 50) {
-        tg ? tg.showAlert("You need 50+ points to withdraw.") : alert("Need 50+ points.");
+        notify("⚠️ You need 50+ points to withdraw.");
         return;
       }
       const withdrawAmount = Math.floor(points / 50);
-      tg ? tg.showAlert(`Withdrawing ${withdrawAmount} units...`) : alert(`Withdrawing ${withdrawAmount} units...`);
+      notify(`💵 Withdrawing ${withdrawAmount} units...`);
       points = 0;
+      saveProgress();
       updateUI();
     });
 
+    loadProgress();
     updateUI();
   </script>
 </body>
